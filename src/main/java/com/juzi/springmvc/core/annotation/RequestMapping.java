@@ -1,4 +1,4 @@
-package com.juzi.springmvc.custom.annotation;
+package com.juzi.springmvc.core.annotation;
 
 import java.lang.annotation.*;
 
