@@ -24,8 +24,14 @@ public class MyHandlerMapping {
      */
     private final List<MyHandler> handlerList;
 
+    /**
+     * 容器对象
+     */
     private final MyWebApplicationContext myWebApplicationContext;
 
+    /**
+     * 工程路径
+     */
     private final String PROJECT_PATH;
 
     public MyHandlerMapping(MyWebApplicationContext myWebApplicationContext, String projectPath) {
@@ -34,9 +40,6 @@ public class MyHandlerMapping {
         PROJECT_PATH = projectPath;
     }
 
-    public List<MyHandler> getHandlerList() {
-        return handlerList;
-    }
 
     /**
      * 初始化映射关系，封装成MyHandler对象存入集合
@@ -75,7 +78,6 @@ public class MyHandlerMapping {
     public MyHandler getHandlerByRequest(HttpServletRequest request) {
         // 获取URL
         String requestUri = request.getRequestURI();
-        System.out.println("requestURI = " + requestUri);
         for (MyHandler myHandler : handlerList) {
             if (requestUri.equals(myHandler.getUrl())) {
                 return myHandler;

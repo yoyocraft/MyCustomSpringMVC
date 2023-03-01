@@ -4,6 +4,7 @@ import com.juzi.springmvc.custom.context.MyWebApplicationContext;
 import com.juzi.springmvc.custom.handler.MyHandler;
 import com.juzi.springmvc.custom.mapping.MyHandlerMapping;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -24,12 +25,20 @@ public class MyDispatcherServlet extends HttpServlet {
      */
     private MyHandlerMapping myHandlerMapping;
 
+    /**
+     * xml配置文件初始化参数配置
+     */
+    private static final String INIT_PARAM_CONTEXT_CONFIG_LOCATION = "contextConfigLocation";
+
 
     @Override
-    public void init() throws ServletException {
-        MyWebApplicationContext myWebApplicationContext = new MyWebApplicationContext();
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+        String projectPath = getServletContext().getContextPath();
+        String contextConfigLocation = config.getInitParameter(INIT_PARAM_CONTEXT_CONFIG_LOCATION);
+        MyWebApplicationContext myWebApplicationContext = new MyWebApplicationContext(contextConfigLocation);
         myWebApplicationContext.init();
-        myHandlerMapping = new MyHandlerMapping(myWebApplicationContext, getServletContext().getContextPath());
+        myHandlerMapping = new MyHandlerMapping(myWebApplicationContext, projectPath);
         myHandlerMapping.initHandlerMapping();
     }
 
@@ -51,7 +60,6 @@ public class MyDispatcherServlet extends HttpServlet {
      */
     private void executeDispatcher(HttpServletRequest req, HttpServletResponse resp) {
         MyHandler handler = myHandlerMapping.getHandlerByRequest(req);
-        String contextPath = getServletContext().getContextPath();
         try {
             if (handler == null) {
                 resp.getWriter().print("<h1>404 NOT FOUND</h1>");
