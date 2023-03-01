@@ -18,14 +18,32 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class MyWebApplicationContext {
 
+    /**
+     * 单例池，存放Bean实例
+     */
     private final ConcurrentHashMap<String, Object> singletonObjects;
 
+    /**
+     * 类全路径集合
+     */
     private final List<String> classFullPathList;
+
+    /**
+     * 容器配置文件
+     */
+    private String contextConfigLocation;
 
 
     {
         classFullPathList = new ArrayList<>();
         singletonObjects = new ConcurrentHashMap<>();
+    }
+
+    public MyWebApplicationContext() {
+    }
+
+    public MyWebApplicationContext(String contextConfigLocation) {
+        this.contextConfigLocation = contextConfigLocation;
     }
 
     public ConcurrentHashMap<String, Object> getSingletonObjects() {
@@ -36,7 +54,8 @@ public class MyWebApplicationContext {
      * 初始化Spring容器，把@Controller修饰的类初始化到容器中
      */
     public void init() {
-        String basePackage = XmlParserUtil.getBasePackage("myspringmvc.xml");
+        String xmlFile = contextConfigLocation.split(":")[1];
+        String basePackage = XmlParserUtil.getBasePackage(xmlFile);
         // 按照 , 来分割多个扫描包
         String[] splitBasePackages = basePackage.split(",");
         for (String splitBasePackage : splitBasePackages) {
@@ -58,7 +77,6 @@ public class MyWebApplicationContext {
         // 得到URL
         String packName = basePackage.replaceAll("\\.", "/");
         URL url = this.getClass().getClassLoader().getResource(packName);
-        System.out.println("url = " + url);
 
         // 取出路径
         assert url != null;
