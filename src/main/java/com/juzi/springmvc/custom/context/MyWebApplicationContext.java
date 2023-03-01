@@ -1,0 +1,111 @@
+package com.juzi.springmvc.custom.context;
+
+import com.juzi.springmvc.custom.annotation.Controller;
+import com.juzi.springmvc.utils.XmlParserUtil;
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.File;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * 自定义Web Application Context
+ *
+ * @author codejuzi
+ */
+public class MyWebApplicationContext {
+
+    private final ConcurrentHashMap<String, Object> singletonObjects;
+
+    private final List<String> classFullPathList;
+
+
+    {
+        classFullPathList = new ArrayList<>();
+        singletonObjects = new ConcurrentHashMap<>();
+    }
+
+    public ConcurrentHashMap<String, Object> getSingletonObjects() {
+        return singletonObjects;
+    }
+
+    /**
+     * 初始化Spring容器，把@Controller修饰的类初始化到容器中
+     */
+    public void init() {
+        String basePackage = XmlParserUtil.getBasePackage("myspringmvc.xml");
+        // 按照 , 来分割多个扫描包
+        String[] splitBasePackages = basePackage.split(",");
+        for (String splitBasePackage : splitBasePackages) {
+            // 扫描各个包
+            scanPackage(splitBasePackage.trim());
+        }
+        System.out.println("after scanning, classFullPathList = " + classFullPathList);
+        // load bean
+        loadBeanToContainer();
+        System.out.println("after loading, singletonObjects = " + singletonObjects);
+    }
+
+    /**
+     * 扫描包，得到类的全路径
+     *
+     * @param basePackage 带扫描的包名
+     */
+    public void scanPackage(String basePackage) {
+        // 得到URL
+        String packName = basePackage.replaceAll("\\.", "/");
+        URL url = this.getClass().getClassLoader().getResource(packName);
+        System.out.println("url = " + url);
+
+        // 取出路径
+        assert url != null;
+        String path = url.getFile();
+        File dir = new File(path);
+        // 扫描dir以及其子目录
+        for (File file : Objects.requireNonNull(dir.listFiles())) {
+            if (file.isDirectory()) {
+                // 是目录，递归扫描其子目录
+                scanPackage(basePackage + "." + file.getName());
+            } else {
+                // 是文件，过滤出要处理的.class文件
+                // 得到类的全路径，加入list集合
+                String classFullPath = basePackage + "." + file.getName().replaceAll("\\.class", "");
+                classFullPathList.add(classFullPath);
+            }
+        }
+    }
+
+    /**
+     * 实例化扫描到的类，将需要的加载的SpringBean初始化并放入容器中
+     */
+    public void loadBeanToContainer() {
+        if(classFullPathList.isEmpty()) {
+            // 没有要初始化的类
+            return;
+        }
+        try {
+            for (String classFullPath : classFullPathList) {
+                Class<?> clazz = Class.forName(classFullPath);
+                // 判断是否有@Controller注解修饰
+                if(clazz.isAnnotationPresent(Controller.class)) {
+                    // 得到注解
+                    Controller controller = clazz.getDeclaredAnnotation(Controller.class);
+                    String beanName = controller.value();
+                    if("".equals(beanName)) {
+                        // 未指定beanName
+                        // 得到该类的类名
+                        String className = clazz.getSimpleName();
+                        // 首字母小写作为beanName
+                        beanName = StringUtils.uncapitalize(className);
+                    }
+                    singletonObjects.put(beanName, clazz.newInstance());
+                }
+            }
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+}
