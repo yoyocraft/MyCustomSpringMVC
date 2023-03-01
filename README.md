@@ -6,8 +6,9 @@
 
 - `DispatcherServlet`
 - `Annotation`
-  - `Controller`
-  - `Service`
+  - `@Controller`
+  - `@Service`
+  - `@RequestMapping`
 - Java Objects Autowired
 - Controller Methods to get parameters
 - View Resolver
