@@ -1,6 +1,7 @@
-package com.juzi.springmvc.custom.context;
+package com.juzi.springmvc.core.context;
 
-import com.juzi.springmvc.custom.annotation.Controller;
+import com.juzi.springmvc.core.annotation.Controller;
+import com.juzi.springmvc.core.annotation.Service;
 import com.juzi.springmvc.utils.XmlParserUtil;
 import org.apache.commons.lang3.StringUtils;
 
@@ -120,6 +121,30 @@ public class MyWebApplicationContext {
                         beanName = StringUtils.uncapitalize(className);
                     }
                     singletonObjects.put(beanName, clazz.newInstance());
+                }
+                // 判断是否有@Service注解修饰
+                else if(clazz.isAnnotationPresent(Service.class)) {
+                    // 得到注解
+                    Service service = clazz.getDeclaredAnnotation(Service.class);
+                    String beanName = service.value();
+                    Object bean = clazz.newInstance();
+                    if("".equals(beanName)) {
+                        // 没有指定beanName，得到该Service的所有接口名 => 通过接口来注入Service实例
+                        Class<?>[] clazzInterfaces = clazz.getInterfaces();
+                        for (Class<?> clazzInterface : clazzInterfaces) {
+                            // 接口名首字母小写作为BeanName存入容器
+                            String clazzInterfaceName = clazzInterface.getSimpleName();
+                            String clazzInterfaceBeanName = StringUtils.uncapitalize(clazzInterfaceName);
+                            singletonObjects.put(clazzInterfaceBeanName, bean);
+                        }
+                        // 类名首字母小写作为BeanName存入容器
+                        String clazzName = clazz.getSimpleName();
+                        String clazzBeanName = StringUtils.uncapitalize(clazzName);
+                        singletonObjects.put(clazzBeanName, bean);
+                    } else {
+                        // 指定了beanName
+                        singletonObjects.put(beanName, bean);
+                    }
                 }
             }
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {

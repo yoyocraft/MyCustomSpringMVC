@@ -1,8 +1,8 @@
-package com.juzi.springmvc.custom.servlet;
+package com.juzi.springmvc.core.servlet;
 
-import com.juzi.springmvc.custom.context.MyWebApplicationContext;
-import com.juzi.springmvc.custom.handler.MyHandler;
-import com.juzi.springmvc.custom.mapping.MyHandlerMapping;
+import com.juzi.springmvc.core.context.MyWebApplicationContext;
+import com.juzi.springmvc.core.handler.MyHandler;
+import com.juzi.springmvc.core.mapping.MyHandlerMapping;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;

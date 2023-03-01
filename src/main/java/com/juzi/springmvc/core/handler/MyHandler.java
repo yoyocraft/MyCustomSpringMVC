@@ -1,4 +1,4 @@
-package com.juzi.springmvc.custom.handler;
+package com.juzi.springmvc.core.handler;
 
 import java.lang.reflect.Method;
 

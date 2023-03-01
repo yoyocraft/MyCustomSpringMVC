@@ -8,7 +8,7 @@
     <!--配置MyDispatcherServlet-->
     <servlet>
         <servlet-name>myDispatcherServlet</servlet-name>
-        <servlet-class>com.juzi.springmvc.custom.servlet.MyDispatcherServlet</servlet-class>
+        <servlet-class>com.juzi.springmvc.core.servlet.MyDispatcherServlet</servlet-class>
         <init-param>
             <param-name>contextConfigLocation</param-name>
             <param-value>classpath:myspringmvc.xml</param-value>

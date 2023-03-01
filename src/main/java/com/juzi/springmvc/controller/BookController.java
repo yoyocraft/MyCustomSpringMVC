@@ -1,7 +1,7 @@
 package com.juzi.springmvc.controller;
 
-import com.juzi.springmvc.custom.annotation.Controller;
-import com.juzi.springmvc.custom.annotation.RequestMapping;
+import com.juzi.springmvc.core.annotation.Controller;
+import com.juzi.springmvc.core.annotation.RequestMapping;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

@@ -1,9 +1,9 @@
-package com.juzi.springmvc.custom.mapping;
+package com.juzi.springmvc.core.mapping;
 
-import com.juzi.springmvc.custom.annotation.Controller;
-import com.juzi.springmvc.custom.annotation.RequestMapping;
-import com.juzi.springmvc.custom.context.MyWebApplicationContext;
-import com.juzi.springmvc.custom.handler.MyHandler;
+import com.juzi.springmvc.core.annotation.Controller;
+import com.juzi.springmvc.core.annotation.RequestMapping;
+import com.juzi.springmvc.core.context.MyWebApplicationContext;
+import com.juzi.springmvc.core.handler.MyHandler;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
