@@ -1,14 +1,17 @@
 package com.juzi.springmvc.core.context;
 
+import com.juzi.springmvc.core.annotation.Autowired;
 import com.juzi.springmvc.core.annotation.Controller;
 import com.juzi.springmvc.core.annotation.Service;
 import com.juzi.springmvc.utils.XmlParserUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -67,6 +70,9 @@ public class MyWebApplicationContext {
         // load bean
         loadBeanToContainer();
         System.out.println("after loading, singletonObjects = " + singletonObjects);
+
+        // dependency injection
+        executeAutowired();
     }
 
     /**
@@ -149,6 +155,48 @@ public class MyWebApplicationContext {
             }
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
+        }
+    }
+
+
+    /**
+     * 实现属性的自动装配
+     */
+    public void executeAutowired() {
+        if(singletonObjects.isEmpty()) {
+            throw new RuntimeException("singleton objects is empty!");
+        }
+        // 遍历容器中已经实例化的bean
+        for (Map.Entry<String, Object> entry : singletonObjects.entrySet()) {
+            String beanNameKey = entry.getKey();
+            Object bean = entry.getValue();
+            // 遍历bean的所有属性
+            Field[] declaredFields = bean.getClass().getDeclaredFields();
+            for (Field declaredField : declaredFields) {
+                // 判断属性是否有@Autowired注解修饰
+                if(declaredField.isAnnotationPresent(Autowired.class)) {
+                    // 得到注解
+                    Autowired autowired = declaredField.getDeclaredAnnotation(Autowired.class);
+                    String beanName = autowired.value();
+                    if("".equals(beanName)) {
+                        // 没有指定BeanName，根据属性类型的首字母小写作为beanName注入
+                        Class<?> typeClazz = declaredField.getType();
+                        beanName = StringUtils.uncapitalize(typeClazz.getSimpleName());
+                    }
+                    // 指定了BeanName
+                    if(!singletonObjects.containsKey(beanName)) {
+                        // beanName不存在
+                        throw new RuntimeException(beanName + "is not exist in singleton objects");
+                    }
+                    try {
+                        // 注入属性
+                        declaredField.setAccessible(true);
+                        declaredField.set(bean, singletonObjects.get(beanName));
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
         }
     }
 }
