@@ -58,10 +58,10 @@ public class MyWebApplicationContext {
      * 初始化Spring容器，把@Controller修饰的类初始化到容器中
      */
     public void init() {
-        String xmlFile = contextConfigLocation.split(":")[1];
+        String xmlFile = contextConfigLocation.split("\\:")[1];
         String basePackage = XmlParserUtil.getBasePackage(xmlFile);
         // 按照 , 来分割多个扫描包
-        String[] splitBasePackages = basePackage.split(",");
+        String[] splitBasePackages = basePackage.split("\\,");
         for (String splitBasePackage : splitBasePackages) {
             // 扫描各个包
             scanPackage(splitBasePackage.trim());
