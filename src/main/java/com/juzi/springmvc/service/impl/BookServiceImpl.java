@@ -16,6 +16,8 @@ public class BookServiceImpl implements BookService {
 
     private static final List<Book> BOOK_LIST = new ArrayList<>();
 
+    private static final String USER_NAME = "CodeJuzi";
+
     static {
         BOOK_LIST.add(new Book("001", "《根治猪瘟饕的狗叫》"));
         BOOK_LIST.add(new Book("002", "《根治猪瘟饕的嚣张》"));
@@ -42,5 +44,13 @@ public class BookServiceImpl implements BookService {
         }
         System.out.println("bookList = " + bookList);
         return bookList;
+    }
+
+    @Override
+    public boolean login(String userName) {
+        if(StringUtils.isNotBlank(userName)) {
+            return USER_NAME.equalsIgnoreCase(userName);
+        }
+        return false;
     }
 }

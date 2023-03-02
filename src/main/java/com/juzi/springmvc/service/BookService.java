@@ -24,4 +24,12 @@ public interface BookService {
      * @return 书籍集合
      */
     List<Book> getBooksByName(String bookName);
+
+    /**
+     * 用户登录（测试），仅允许CodeJuzi登录
+     *
+     * @param userName 用户名
+     * @return 登录成功｜ 失败
+     */
+    boolean login(String userName);
 }
