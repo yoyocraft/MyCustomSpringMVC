@@ -62,6 +62,21 @@ public class BookController {
         }
     }
 
+    @RequestMapping("/book/login")
+    public String login(HttpServletRequest request,
+                        HttpServletResponse response,
+                        @RequestParam(value = "name") String userName) {
+        System.out.println("userName = " + userName);
+        boolean isSuccess = bookService.login(userName);
+        System.out.println("isSuccess = " + isSuccess);
+        request.setAttribute("userName", userName);
+        if(isSuccess) {
+            return "forward:/login_success.jsp";
+        } else {
+            return "forward:/login_error.jsp";
+        }
+    }
+
     private void parseResponse(HttpServletResponse response, List<Book> bookList) throws IOException {
         StringBuilder content = new StringBuilder("<h1>Book List</h1>");
         content.append("<table width='500px' style='border-collapse:collapse border='1px'>");

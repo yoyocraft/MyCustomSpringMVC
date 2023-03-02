@@ -36,6 +36,21 @@ public class MyDispatcherServlet extends HttpServlet {
      */
     private static final String INIT_PARAM_CONTEXT_CONFIG_LOCATION = "contextConfigLocation";
 
+    /**
+     * 视图分割符号
+     */
+    public static final String VIEW_SPLIT_SYMBOL = ":";
+
+
+    /**
+     * 请求转发前缀
+     */
+    private static final String VIEW_FORWARD = "forward";
+
+    /**
+     * 请求重定向前缀
+     */
+    private static final String VIEW_REDIRECT = "redirect";
 
     @Override
     public void init(ServletConfig config) throws ServletException {
@@ -86,6 +101,8 @@ public class MyDispatcherServlet extends HttpServlet {
                         reqParam[i] = resp;
                     }
                 }
+                // 处理中文乱码
+                resp.setCharacterEncoding("utf-8");
                 // 再处理请求参数中携带的参数
                 Map<String, String[]> parameterMap = req.getParameterMap();
                 for (Map.Entry<String, String[]> entry : parameterMap.entrySet()) {
@@ -96,9 +113,30 @@ public class MyDispatcherServlet extends HttpServlet {
                     reqParam[reqParamIndex] = paramValue;
                 }
 
-
                 // 传入参数数组，动态获取
-                handler.getMethod().invoke(handler.getController(), reqParam);
+                Object result = handler.getMethod().invoke(handler.getController(), reqParam);
+                try {
+                    // 对结果进行简单的视图处理
+                    if(result instanceof String) {
+                        String viewName = (String) result;
+                        if(viewName.contains(VIEW_SPLIT_SYMBOL)) {
+                            // 说明是请求转发或者请求重定向
+                            String[] view = viewName.split(":");
+                            String viewType = view[0];
+                            String viewPage = view[1];
+                            if (VIEW_FORWARD.equals(viewType)) {
+                                req.getRequestDispatcher(viewPage).forward(req, resp);
+                            } else if(VIEW_REDIRECT.equals(viewType)) {
+                                resp.sendRedirect(viewPage);
+                            }
+                        } else {
+                            // 默认转发
+                            req.getRequestDispatcher(viewName).forward(req, resp);
+                        }
+                    }
+                } catch (ServletException e) {
+                    e.printStackTrace();
+                }
             }
         } catch (IOException | InvocationTargetException | IllegalAccessException e) {
             e.printStackTrace();
