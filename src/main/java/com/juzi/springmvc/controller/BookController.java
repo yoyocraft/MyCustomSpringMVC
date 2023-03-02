@@ -1,9 +1,6 @@
 package com.juzi.springmvc.controller;
 
-import com.juzi.springmvc.core.annotation.Autowired;
-import com.juzi.springmvc.core.annotation.Controller;
-import com.juzi.springmvc.core.annotation.RequestMapping;
-import com.juzi.springmvc.core.annotation.RequestParam;
+import com.juzi.springmvc.core.annotation.*;
 import com.juzi.springmvc.pojo.entity.Book;
 import com.juzi.springmvc.service.BookService;
 import org.apache.commons.lang3.StringUtils;
@@ -26,7 +23,7 @@ public class BookController {
     private BookService bookService;
 
     /**
-     * 测试方法
+     * 测试方法1
      *
      * @param request  request
      * @param response response
@@ -44,7 +41,13 @@ public class BookController {
         }
     }
 
-
+    /**
+     * 测试方法2
+     *
+     * @param request  request
+     * @param response response
+     * @param bookName book name
+     */
     @RequestMapping("/book/get")
     public void getBookByBookName(HttpServletRequest request,
                                   HttpServletResponse response,
@@ -52,7 +55,7 @@ public class BookController {
         response.setContentType("text/html; charset=utf-8");
 
         try {
-            if(StringUtils.isBlank(bookName)) {
+            if (StringUtils.isBlank(bookName)) {
                 bookName = "";
             }
             List<Book> bookList = bookService.getBooksByName(bookName);
@@ -62,6 +65,14 @@ public class BookController {
         }
     }
 
+    /**
+     * 测试方法3
+     *
+     * @param request  request
+     * @param response response
+     * @param userName user name
+     * @return view
+     */
     @RequestMapping("/book/login")
     public String login(HttpServletRequest request,
                         HttpServletResponse response,
@@ -70,12 +81,27 @@ public class BookController {
         boolean isSuccess = bookService.login(userName);
         System.out.println("isSuccess = " + isSuccess);
         request.setAttribute("userName", userName);
-        if(isSuccess) {
+        if (isSuccess) {
             return "forward:/login_success.jsp";
         } else {
             return "forward:/login_error.jsp";
         }
     }
+
+    /**
+     * 测试方法4
+     *
+     * @param request  request
+     * @param response response
+     * @return book list
+     */
+    @RequestMapping(value = "/book/list/json")
+    @ResponseBody
+    public List<Book> listBooksByJson(HttpServletRequest request, HttpServletResponse response) {
+        response.setContentType("text/html; charset=utf-8");
+        return bookService.listBooks();
+    }
+
 
     private void parseResponse(HttpServletResponse response, List<Book> bookList) throws IOException {
         StringBuilder content = new StringBuilder("<h1>Book List</h1>");

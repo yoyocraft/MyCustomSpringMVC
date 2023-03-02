@@ -1,6 +1,9 @@
 package com.juzi.springmvc.core.servlet;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.juzi.springmvc.core.annotation.RequestParam;
+import com.juzi.springmvc.core.annotation.ResponseBody;
 import com.juzi.springmvc.core.context.MyWebApplicationContext;
 import com.juzi.springmvc.core.handler.MyHandler;
 import com.juzi.springmvc.core.mapping.MyHandlerMapping;
@@ -11,6 +14,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -52,6 +56,12 @@ public class MyDispatcherServlet extends HttpServlet {
      */
     private static final String VIEW_REDIRECT = "redirect";
 
+    /**
+     * gson
+     */
+    private static final Gson GSON_UTIL = new GsonBuilder().disableHtmlEscaping().create();
+
+
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
@@ -64,12 +74,12 @@ public class MyDispatcherServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
         doPost(req, resp);
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
         executeDispatcher(req, resp);
     }
 
@@ -82,12 +92,14 @@ public class MyDispatcherServlet extends HttpServlet {
     private void executeDispatcher(HttpServletRequest req, HttpServletResponse resp) {
         MyHandler handler = myHandlerMapping.getHandlerByRequest(req);
         try {
+            PrintWriter writer = resp.getWriter();
             if (handler == null) {
-                resp.getWriter().print("<h1>404 NOT FOUND</h1>");
+                writer.print("<h1>404 NOT FOUND</h1>");
             } else {
                 // 有匹配的handler
                 // 生成参数数组，传入invoke
-                Class<?>[] parameterTypes = handler.getMethod().getParameterTypes();
+                Method method = handler.getMethod();
+                Class<?>[] parameterTypes = method.getParameterTypes();
                 // 定义请求的参数集合
                 Object[] reqParam = new Object[parameterTypes.length];
 
@@ -109,12 +121,12 @@ public class MyDispatcherServlet extends HttpServlet {
                     String paramKey = entry.getKey();
                     // 此处简化操作，只考虑一个参数值，不考虑checkbox等的情况
                     String paramValue = entry.getValue()[0];
-                    int reqParamIndex = getReqParamIdxByParamKey(handler.getMethod(), paramKey);
+                    int reqParamIndex = getReqParamIdxByParamKey(method, paramKey);
                     reqParam[reqParamIndex] = paramValue;
                 }
 
                 // 传入参数数组，动态获取
-                Object result = handler.getMethod().invoke(handler.getController(), reqParam);
+                Object result = method.invoke(handler.getController(), reqParam);
                 try {
                     // 对结果进行简单的视图处理
                     if(result instanceof String) {
@@ -132,6 +144,16 @@ public class MyDispatcherServlet extends HttpServlet {
                         } else {
                             // 默认转发
                             req.getRequestDispatcher(viewName).forward(req, resp);
+                        }
+                    }
+                    // 处理json转换
+                    else if (result instanceof List) {
+                        if (method.isAnnotationPresent(ResponseBody.class)) {
+                            String json = GSON_UTIL.toJson(result);
+                            resp.setContentType("text/html; charset=utf-8");
+                            writer.print(json);
+                            writer.flush();
+                            writer.close();
                         }
                     }
                 } catch (ServletException e) {
